@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "dateTime": "2023-05-13T00:00:00Z",
+      "longitude": 4.190495,
+      "latitude": 60.929139,
+      "depth": 11.0
+    },
+    {
+      "dateTime": "2023-05-13T00:00:01Z",
+      "longitude": 4.190491,
+      "latitude": 60.929139,
+      "depth": 11.0
+    },
+    {
+      "dateTime": "2023-05-13T00:00:02Z",
+      "longitude": 4.190482,
+      "latitude": 60.9375,
+      "depth": 74.0
+    },
+    {
+      "dateTime": "2023-05-13T00:00:03Z",
+      "longitude": 4.190495,
+      "latitude": 60.929139,
+      "depth": 11.0
+    }
+  ]
+}

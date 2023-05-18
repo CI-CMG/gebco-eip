@@ -1,0 +1,55 @@
+<routes xmlns="http://camel.apache.org/schema/spring">
+
+    <route id="file-listener">
+        <from uri="file:test-files/drop?antInclude=*.md.json"/>
+        <bean ref="fileInfoContentEnricher" method="createFileInfoMessage" />
+        <choice>
+            <when>
+                <simple>${body.type} == 'csv'</simple>
+                <marshal><json library="Jackson" unmarshalType="java.lang.String"/></marshal>
+                <to uri="jms:queue:csv-file"/>
+            </when>
+            <when>
+                <simple>${body.type} == 'json'</simple>
+                <marshal><json library="Jackson" unmarshalType="java.lang.String"/></marshal>
+                <to uri="jms:queue:json-file"/>
+            </when>
+        </choice>
+    </route>
+
+    <route id="csv-file-enrichment">
+        <from uri="jms:queue:csv-file"/>
+        <unmarshal><json library="Jackson" unmarshalType="gebcoeip.json.FileProcessingMessage"/></unmarshal>
+        <bean ref="csvFileContentEnricher" method="setPointData" />
+        <marshal><json library="Jackson" unmarshalType="java.lang.String"/></marshal>
+        <to uri="jms:queue:file-processing"/>
+    </route>
+
+    <route id="json-file-enrichment">
+        <from uri="jms:queue:json-file"/>
+        <unmarshal><json library="Jackson" unmarshalType="gebcoeip.json.FileProcessingMessage"/></unmarshal>
+        <bean ref="jsonFileContentEnricher" method="setPointData" />
+        <marshal><json library="Jackson" unmarshalType="java.lang.String"/></marshal>
+        <to uri="jms:queue:file-processing"/>
+    </route>
+
+    <route id="file-processing">
+        <from uri="jms:queue:file-processing"/>
+        <unmarshal><json library="Jackson" unmarshalType="gebcoeip.json.FileProcessingMessage"/></unmarshal>
+        <bean ref="fileCleanupProcessor" method="cleanup" />
+        <split>
+            <simple>${body.dataPoints}</simple>
+            <marshal><json library="Jackson" unmarshalType="java.lang.String"/></marshal>
+            <to uri="jms:queue:point-save"/>
+        </split>
+    </route>
+
+    <route id="point-save">
+        <from uri="jms:queue:point-save"/>
+        <unmarshal><json library="Jackson" unmarshalType="gebcoeip.json.DataPoint"/></unmarshal>
+        <bean ref="pointSaveProcessor" method="savePoint" />
+        <marshal><json library="Jackson" unmarshalType="java.lang.String"/></marshal>
+        <to uri="log:file-processing"/>
+    </route>
+
+</routes>

@@ -1,0 +1,35 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean id="fileInfoContentEnricher" class="gebcoeip.FileInfoContentEnricher"/>
+
+    <bean id="csvFileContentEnricher" class="gebcoeip.CsvFileContentEnricher"/>
+
+    <bean id="fileCleanupProcessor" class="gebcoeip.FileCleanupProcessor"/>
+
+    <bean id="jsonFileContentEnricher" class="gebcoeip.JsonFileContentEnricher">
+        <property name="objectMapper" ref="jacksonObjectMapper"/>
+    </bean>
+
+    <bean id="pointSaveProcessor" class="gebcoeip.PointSaveProcessor">
+        <property name="repository" ref="dataPointRepository"/>
+        <property name="tx" ref="transactionTemplate"/>
+    </bean>
+
+    <bean id="isoMetadataProcessor" class="gebcoeip.IsoMetadataProcessor"/>
+
+    <bean id="fileAggregationStrategy" class="gebcoeip.FileAggregationStrategy"/>
+
+    <bean id="errorEmailPrepProcessor" class="gebcoeip.ErrorPrepProcessor">
+        <property name="objectMapper" ref="jacksonObjectMapper" />
+    </bean>
+
+    <bean id="dlqHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
+        <property name="deadLetterUri" value="jms:queue:error-dlq"/>
+        <property name="onPrepareFailureProcessor" ref="errorEmailPrepProcessor"/>
+    </bean>
+
+</beans>

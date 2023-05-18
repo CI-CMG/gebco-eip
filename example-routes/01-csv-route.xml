@@ -1,0 +1,30 @@
+<routes xmlns="http://camel.apache.org/schema/spring">
+
+    <route id="file-listener">
+        <!-- https://camel.apache.org/components/3.20.x/file-component.html -->
+        <from uri="file:test-files/drop?antInclude=*.md.json"/>
+        <bean ref="fileInfoContentEnricher" method="createFileInfoMessage" />
+        <filter>
+            <simple>${body.type} == 'csv'</simple>
+            <marshal><json library="Jackson" unmarshalType="java.lang.String"/></marshal>
+            <to uri="jms:queue:csv-file"/>
+        </filter>
+    </route>
+
+    <route id="csv-file-enrichment">
+        <!-- https://camel.apache.org/components/3.20.x/jms-component.html -->
+        <from uri="jms:queue:csv-file"/>
+        <unmarshal><json library="Jackson" unmarshalType="gebcoeip.json.FileProcessingMessage"/></unmarshal>
+        <bean ref="csvFileContentEnricher" method="setPointData" />
+        <marshal><json library="Jackson" unmarshalType="java.lang.String"/></marshal>
+        <to uri="jms:queue:file-processing"/>
+    </route>
+
+    <route id="file-processing">
+        <from uri="jms:queue:file-processing"/>
+        <unmarshal><json library="Jackson" unmarshalType="gebcoeip.json.FileProcessingMessage"/></unmarshal>
+        <bean ref="fileCleanupProcessor" method="cleanup" />
+        <marshal><json library="Jackson" unmarshalType="java.lang.String"/></marshal>
+        <to uri="log:file-processing"/>
+    </route>
+</routes>

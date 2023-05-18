@@ -1,0 +1,59 @@
+eip:
+  db-schema: public
+  email-address: ''
+  email-password: ''
+  email-to: ''
+
+camel:
+  component:
+    jms:
+      async-consumer: true
+  dataformat:
+    jackson:
+      auto-discover-object-mapper: true
+  springboot:
+    main-run-controller: true
+    name: my-camel
+
+spring:
+  artemis:
+    mode: native
+    user: artemis
+    password: letmein
+    host: localhost
+    port: 8161
+  output:
+    ansi:
+      enabled: always
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      fail_on_empty_beans: false
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: ${eip.db-schema}
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/gebco
+    username: gebco
+    password: letmein
+  flyway:
+    locations: classpath:db/migration/{vendor}
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: '000'
+    user: '${spring.datasource.username}'
+    password: '${spring.datasource.password}'
+    default-schema: '${eip.db-schema}'
+    placeholders:
+      schema_name: '${eip.db-schema}'
+    schemas:
+      - '${eip.db-schema}'
+    create-schemas: false
+
+
+
